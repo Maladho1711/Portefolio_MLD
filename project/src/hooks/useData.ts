@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Project, Skill } from '../types';
 import guineasmartImage from '../assets/images/guineasmart.jpg';
 import koripayImage from '../assets/images/KoriPay.jpg';
-import guintechImage from '../assets/images/guintech.png';
+import guintechImage from '../assets/images/guintech02.jpg';
 
 const mockProjects: Project[] = [
   // Projets terminés
@@ -87,7 +87,7 @@ export const useData = () => {
 
   useEffect(() => {
     // Version des données pour forcer la mise à jour
-    const DATA_VERSION = '5.2';
+    const DATA_VERSION = '5.3';
     const storedVersion = localStorage.getItem('portfolioDataVersion');
     
     // Si la version a changé ou n'existe pas, on nettoie et utilise les nouvelles données
