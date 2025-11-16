@@ -21,7 +21,7 @@ const mockProjects: Project[] = [
   {
     id: '2',
     title: 'Koripay',
-    description: 'Plateforme fintech permettant la gestion sécurisée des paiements, des factures et du transfert d\'argent. L\'objectif est de rendre les transactions rapides, simples et accessibles à tous. Système basé sur la transparence, l\'efficacité et l\'innovation technologique.',
+    description: 'Koripay est une solution fintech innovante que j\'ai contribué à créer, destinée à connecter le Mobile Money guinéen à la finance numérique mondiale. L\'objectif de Koripay est de permettre à chacun, en Guinée et en Afrique francophone, d\'accéder facilement aux monnaies numériques comme l\'USDT, sans avoir besoin de carte internationale ni de passer par des revendeurs informels.',
     image: koripayImage,
     link: 'https://example.com',
     githubLink: 'https://github.com/example/koripay',
@@ -87,7 +87,7 @@ export const useData = () => {
 
   useEffect(() => {
     // Version des données pour forcer la mise à jour
-    const DATA_VERSION = '5.1';
+    const DATA_VERSION = '5.2';
     const storedVersion = localStorage.getItem('portfolioDataVersion');
     
     // Si la version a changé ou n'existe pas, on nettoie et utilise les nouvelles données
