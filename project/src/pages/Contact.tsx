@@ -32,9 +32,23 @@ const Contact = () => {
     try {
       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
       
-      // Créer un AbortController pour gérer le timeout
+      // Vérifier d'abord si le serveur est disponible (health check)
+      try {
+        const healthCheck = await fetch(`${API_URL}/api/health`, {
+          method: 'GET',
+          signal: AbortSignal.timeout(10000), // 10 secondes pour le health check
+        });
+        if (!healthCheck.ok) {
+          throw new Error('Le serveur est en cours de démarrage. Veuillez réessayer dans quelques instants.');
+        }
+      } catch (healthError) {
+        // Si le health check échoue, on continue quand même (le serveur peut être en veille)
+        console.log('Health check échoué, tentative d\'envoi quand même...');
+      }
+      
+      // Créer un AbortController pour gérer le timeout (90 secondes pour laisser le temps au serveur de démarrer)
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 secondes de timeout
+      const timeoutId = setTimeout(() => controller.abort(), 90000); // 90 secondes de timeout
 
       const response = await fetch(`${API_URL}/api/contact`, {
         method: 'POST',
@@ -50,12 +64,20 @@ const Contact = () => {
       // Vérifier si la réponse est valide avant de parser le JSON
       let data;
       try {
-        data = await response.json();
+        const text = await response.text();
+        if (!text) {
+          throw new Error('Le serveur a retourné une réponse vide.');
+        }
+        data = JSON.parse(text);
       } catch (jsonError) {
         throw new Error('Le serveur a retourné une réponse invalide. Veuillez réessayer.');
       }
 
       if (!response.ok) {
+        // Gestion spécifique des erreurs 500
+        if (response.status === 500) {
+          throw new Error('Erreur serveur. Le service peut être en cours de démarrage (plan gratuit). Veuillez réessayer dans 30 secondes.');
+        }
         throw new Error(data.error || `Erreur serveur (${response.status}). Veuillez réessayer.`);
       }
 
