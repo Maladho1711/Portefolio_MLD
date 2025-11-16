@@ -31,18 +31,32 @@ const Contact = () => {
 
     try {
       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      
+      // Créer un AbortController pour gérer le timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 secondes de timeout
+
       const response = await fetch(`${API_URL}/api/contact`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(formData),
+        signal: controller.signal,
       });
 
-      const data = await response.json();
+      clearTimeout(timeoutId);
+
+      // Vérifier si la réponse est valide avant de parser le JSON
+      let data;
+      try {
+        data = await response.json();
+      } catch (jsonError) {
+        throw new Error('Le serveur a retourné une réponse invalide. Veuillez réessayer.');
+      }
 
       if (!response.ok) {
-        throw new Error(data.error || 'Erreur lors de l\'envoi du message');
+        throw new Error(data.error || `Erreur serveur (${response.status}). Veuillez réessayer.`);
       }
 
       setIsSubmitting(false);
@@ -55,17 +69,24 @@ const Contact = () => {
       }, 5000);
     } catch (error) {
       setIsSubmitting(false);
-      // Gestion des erreurs réseau vs erreurs serveur
-      if (error instanceof TypeError && error.message.includes('fetch')) {
-        setError('Erreur de connexion. Vérifiez votre connexion internet et réessayez.');
+      
+      // Gestion spécifique des différents types d'erreurs
+      if (error instanceof Error) {
+        if (error.name === 'AbortError') {
+          setError('Le serveur met trop de temps à répondre. Le service peut être en veille (plan gratuit). Veuillez réessayer dans quelques instants.');
+        } else if (error.message.includes('fetch') || error.message.includes('Failed to fetch')) {
+          setError('Impossible de contacter le serveur. Vérifiez votre connexion internet ou réessayez plus tard. Le service peut être temporairement indisponible.');
+        } else {
+          setError(error.message);
+        }
       } else {
-        setError(error instanceof Error ? error.message : 'Erreur lors de l\'envoi du message. Veuillez réessayer.');
+        setError('Une erreur inattendue s\'est produite. Veuillez réessayer.');
       }
       
-      // Effacer l'erreur après 5 secondes
+      // Effacer l'erreur après 8 secondes
       setTimeout(() => {
         setError(null);
-      }, 5000);
+      }, 8000);
     }
   };
 
