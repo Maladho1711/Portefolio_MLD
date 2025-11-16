@@ -54,9 +54,15 @@ const Contact = () => {
         // Mais on prépare un message d'erreur plus informatif si ça échoue
       }
       
-      // Créer un AbortController pour gérer le timeout (90 secondes pour laisser le temps au serveur de démarrer)
+      // Créer un AbortController pour gérer le timeout (60 secondes pour laisser le temps au serveur de démarrer)
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 90000); // 90 secondes de timeout
+      const timeoutId = setTimeout(() => {
+        controller.abort();
+        console.error('Timeout: La requête a pris plus de 60 secondes');
+      }, 60000); // 60 secondes de timeout
+
+      console.log('Envoi de la requête vers:', `${API_URL}/api/contact`);
+      console.log('Données envoyées:', { name: formData.name, email: formData.email, phone: formData.phone, messageLength: formData.message.length });
 
       const response = await fetch(`${API_URL}/api/contact`, {
         method: 'POST',
@@ -68,6 +74,7 @@ const Contact = () => {
       });
 
       clearTimeout(timeoutId);
+      console.log('Réponse reçue:', response.status, response.statusText);
 
       // Vérifier si la réponse est valide avant de parser le JSON
       let data;

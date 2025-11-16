@@ -58,6 +58,9 @@ app.get('/api/health', (req, res) => {
 
   // Route pour envoyer un email (protégée par rate limiting)
   app.post('/api/contact', contactLimiter, async (req, res) => {
+    console.log('📧 Requête POST /api/contact reçue');
+    console.log('Body:', { name: req.body.name, email: req.body.email, phone: req.body.phone, messageLength: req.body.message?.length });
+    
     try {
       const { name, email, phone, message } = req.body;
 
