@@ -6,13 +6,15 @@ interface CardProps {
   className?: string;
   hover?: boolean;
   padding?: 'sm' | 'md' | 'lg';
+  onClick?: () => void;
 }
 
 export const Card = ({ 
   children, 
   className = '', 
   hover = true,
-  padding = 'md'
+  padding = 'md',
+  onClick
 }: CardProps) => {
   const paddingClasses = {
     sm: 'p-4',
@@ -30,6 +32,7 @@ export const Card = ({
         className={baseClasses}
         whileHover={{ y: -4 }}
         transition={{ duration: 0.2 }}
+        onClick={onClick}
       >
         {children}
       </motion.div>
@@ -37,7 +40,7 @@ export const Card = ({
   }
 
   return (
-    <div className={baseClasses}>
+    <div className={baseClasses} onClick={onClick}>
       {children}
     </div>
   );
