@@ -620,13 +620,22 @@ const ProjectCard = ({ project, index, statusConfig }: ProjectCardProps) => {
         }`}>
           <div className={`absolute inset-0 bg-gradient-to-br ${statusConfig.badgeColor} opacity-10 z-10`} />
           <img
-            src={project.image}
+            src={project.image || ''}
             alt={`${project.title} - Capture d'écran du projet`}
             className={`w-full h-full object-cover transition-transform duration-500 ${
               isPlanned ? 'opacity-60 grayscale' : 
               (isGuinTech || isGuineaSmart) ? '' : 
               'group-hover:scale-110'
             }`}
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              if (target.src && !target.src.includes('data:image')) {
+                target.style.display = 'none';
+              }
+            }}
+            onLoad={() => {
+              // Image chargée avec succès
+            }}
             style={{
               imageRendering: 'high-quality',
               objectPosition: isGuineaSmart ? 'center 15%' : 'center',
