@@ -94,21 +94,23 @@ const Contact = () => {
       
       // Gestion spécifique des différents types d'erreurs
       if (error instanceof Error) {
-        if (error.name === 'AbortError') {
-          setError('Le serveur met trop de temps à répondre. Le service peut être en veille (plan gratuit). Veuillez réessayer dans quelques instants.');
-        } else if (error.message.includes('fetch') || error.message.includes('Failed to fetch')) {
-          setError('Impossible de contacter le serveur. Vérifiez votre connexion internet ou réessayez plus tard. Le service peut être temporairement indisponible.');
+        if (error.name === 'AbortError' || error.message.includes('timeout') || error.message.includes('aborted')) {
+          setError('Le serveur met trop de temps à répondre. Le service Render gratuit peut être en veille et prendre 30-60 secondes à démarrer. Veuillez réessayer dans quelques instants.');
+        } else if (error instanceof TypeError && (error.message.includes('fetch') || error.message.includes('Failed to fetch'))) {
+          setError('Erreur de connexion au serveur. Le service peut être en cours de démarrage. Veuillez réessayer dans 30 secondes.');
+        } else if (error.message.includes('CONNECTION_TIMED_OUT') || error.message.includes('ERR_CONNECTION_TIMED_OUT')) {
+          setError('Le serveur ne répond pas. Le service Render gratuit peut être en veille. Veuillez réessayer dans 30-60 secondes.');
         } else {
-          setError(error.message);
+          setError(error.message || 'Erreur lors de l\'envoi du message. Veuillez réessayer.');
         }
       } else {
-        setError('Une erreur inattendue s\'est produite. Veuillez réessayer.');
+        setError('Erreur lors de l\'envoi du message. Veuillez réessayer.');
       }
       
-      // Effacer l'erreur après 8 secondes
+      // Effacer l'erreur après 10 secondes
       setTimeout(() => {
         setError(null);
-      }, 8000);
+      }, 10000);
     }
   };
 
