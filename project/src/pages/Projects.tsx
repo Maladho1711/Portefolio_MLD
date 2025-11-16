@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ExternalLink, Github, Calendar, CheckCircle2, Clock, Target, ArrowRight, RefreshCw, Code, Sparkles, MessageCircle, Mail } from 'lucide-react';
 import { useData } from '../hooks/useData';
@@ -9,6 +10,7 @@ import { Button } from '../components/Button';
 const Projects = () => {
   const { projects } = useData();
   const [activeFilter, setActiveFilter] = useState<'all' | 'completed' | 'in-progress' | 'planned'>('all');
+  const navigate = useNavigate();
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -571,6 +573,8 @@ interface ProjectCardProps {
 }
 
 const ProjectCard = ({ project, index, statusConfig }: ProjectCardProps) => {
+  const navigate = useNavigate();
+  
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('fr-FR', { 
@@ -592,7 +596,12 @@ const ProjectCard = ({ project, index, statusConfig }: ProjectCardProps) => {
       transition={{ duration: 0.5, delay: index * 0.1 }}
       viewport={{ once: true }}
     >
-      <Card hover={!isPlanned} padding="none" className="overflow-hidden h-full flex flex-col group relative p-0 border-2 border-gray-200/50 dark:border-gray-700/50 hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-300">
+      <Card 
+        hover={!isPlanned} 
+        padding="none" 
+        className="overflow-hidden h-full flex flex-col group relative p-0 border-2 border-gray-200/50 dark:border-gray-700/50 hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-300 cursor-pointer"
+        onClick={() => navigate(`/projects/${project.id}`)}
+      >
         {/* Status Badges - Top Left (Empilés verticalement) */}
         <div className="absolute top-2 sm:top-4 left-2 sm:left-4 z-20 flex flex-col gap-1.5">
           {/* Badge principal (Déployé / En cours) */}
@@ -718,26 +727,35 @@ const ProjectCard = ({ project, index, statusConfig }: ProjectCardProps) => {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-2 mt-auto">
+          <div className="flex gap-2 mt-auto" onClick={(e) => e.stopPropagation()}>
             {isPlanned ? (
               <div className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg text-center text-sm text-gray-500 dark:text-gray-400">
                 Projet à venir
               </div>
             ) : (
               <>
+                <Button
+                  onClick={() => navigate(`/projects/${project.id}`)}
+                  variant="primary"
+                  size="sm"
+                  className="flex-1 group"
+                >
+                  <Code size={16} className="mr-2" />
+                  Voir les détails
+                </Button>
+                
                 {/* Bouton "Voir le projet" uniquement pour les projets déployés */}
-                {project.status === 'completed' && project.link !== '#' && (
+                {project.status === 'completed' && project.link !== '#' && project.link !== 'https://example.com' && (
                   <Button
                     as="a"
                     href={project.link}
-                    variant="primary"
+                    variant="outline"
                     size="sm"
-                    className="flex-1 group"
+                    className="px-4"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <ExternalLink size={16} className="mr-2" />
-                    Voir le projet
+                    <ExternalLink size={16} />
                   </Button>
                 )}
                 
@@ -745,15 +763,14 @@ const ProjectCard = ({ project, index, statusConfig }: ProjectCardProps) => {
                   <Button
                     as="a"
                     href={project.githubLink}
-                    variant={project.status === 'completed' ? 'outline' : 'primary'}
+                    variant="outline"
                     size="sm"
-                    className={project.status === 'completed' ? 'px-4' : 'flex-1'}
+                    className="px-4"
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={`Code source de ${project.title}`}
                   >
-                    <Github size={16} className={project.status === 'completed' ? '' : 'mr-2'} />
-                    {project.status !== 'completed' && <span>Voir sur GitHub</span>}
+                    <Github size={16} />
                   </Button>
                 )}
               </>
