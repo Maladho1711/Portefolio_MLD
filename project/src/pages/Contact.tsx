@@ -33,17 +33,25 @@ const Contact = () => {
       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
       
       // Vérifier d'abord si le serveur est disponible (health check)
+      let serverReady = false;
       try {
         const healthCheck = await fetch(`${API_URL}/api/health`, {
           method: 'GET',
           signal: AbortSignal.timeout(10000), // 10 secondes pour le health check
         });
-        if (!healthCheck.ok) {
-          throw new Error('Le serveur est en cours de démarrage. Veuillez réessayer dans quelques instants.');
+        if (healthCheck.ok) {
+          serverReady = true;
         }
       } catch (healthError) {
-        // Si le health check échoue, on continue quand même (le serveur peut être en veille)
-        console.log('Health check échoué, tentative d\'envoi quand même...');
+        // Si le health check échoue, le serveur est probablement en veille
+        // On continue quand même mais on informera l'utilisateur
+        console.log('Health check échoué, le serveur peut être en veille. Tentative d\'envoi...');
+      }
+      
+      // Si le serveur n'est pas prêt, informer l'utilisateur mais continuer
+      if (!serverReady) {
+        // On continue quand même car le serveur peut démarrer pendant l'envoi
+        // Mais on prépare un message d'erreur plus informatif si ça échoue
       }
       
       // Créer un AbortController pour gérer le timeout (90 secondes pour laisser le temps au serveur de démarrer)
@@ -76,7 +84,11 @@ const Contact = () => {
       if (!response.ok) {
         // Gestion spécifique des erreurs 500
         if (response.status === 500) {
-          throw new Error('Erreur serveur. Le service peut être en cours de démarrage (plan gratuit). Veuillez réessayer dans 30 secondes.');
+          throw new Error('Erreur serveur. Le service Render gratuit peut être en cours de démarrage (30-60 secondes). Veuillez réessayer dans 30 secondes.');
+        }
+        // Gestion des erreurs 503 (Service Unavailable)
+        if (response.status === 503) {
+          throw new Error('Le serveur est temporairement indisponible. Le service Render gratuit peut être en veille. Veuillez réessayer dans 30-60 secondes.');
         }
         throw new Error(data.error || `Erreur serveur (${response.status}). Veuillez réessayer.`);
       }
