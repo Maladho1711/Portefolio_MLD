@@ -418,7 +418,7 @@ const Home = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
               {[
                 {
-                  name: "Madame Aissatou Sow",
+                  name: "Assatou Sow",
                   position: "Formatrice référente",
                   organization: "Simplon Guinée",
                   gradient: "from-blue-600 to-cyan-500",
