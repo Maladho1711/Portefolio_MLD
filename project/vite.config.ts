@@ -7,4 +7,18 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Séparer les grandes bibliothèques
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'animation-vendor': ['framer-motion'],
+          'icons-vendor': ['lucide-react'],
+        },
+      },
+    },
+    // Augmenter la limite d'avertissement pour les chunks (optionnel)
+    chunkSizeWarningLimit: 600,
+  },
 });
