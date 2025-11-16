@@ -87,7 +87,7 @@ export const useData = () => {
 
   useEffect(() => {
     // Version des données pour forcer la mise à jour
-    const DATA_VERSION = '5.0';
+    const DATA_VERSION = '5.1';
     const storedVersion = localStorage.getItem('portfolioDataVersion');
     
     // Si la version a changé ou n'existe pas, on nettoie et utilise les nouvelles données
@@ -96,40 +96,47 @@ export const useData = () => {
       localStorage.removeItem('portfolioSkills');
       localStorage.setItem('portfolioDataVersion', DATA_VERSION);
       
-      // Utiliser directement les nouvelles données
+      // Utiliser directement les nouvelles données (sans stocker les images dans localStorage)
       setProjects(mockProjects);
       setSkills(mockSkills);
-      // Stocker les projets avec les URLs d'images correctes
-      const projectsForStorage = mockProjects.map(project => ({
-        ...project,
-        image: project.image // L'import Vite retourne déjà une URL string
-      }));
+      
+      // Stocker les projets SANS les images (les images restent dans les imports)
+      const projectsForStorage = mockProjects.map(({ image, ...project }) => project);
       localStorage.setItem('portfolioProjects', JSON.stringify(projectsForStorage));
       localStorage.setItem('portfolioSkills', JSON.stringify(mockSkills));
       return;
     }
 
-    // Load data from localStorage or use mock data
+    // Load data from localStorage et réinjecter les images depuis les imports
     const storedProjects = localStorage.getItem('portfolioProjects');
     const storedSkills = localStorage.getItem('portfolioSkills');
 
     if (storedProjects) {
       const parsedProjects = JSON.parse(storedProjects);
-      // Filtrer Vue.js, GraphQL, Redis, PostgreSQL des projets
-      const filteredProjects = parsedProjects.map((project: Project) => ({
-        ...project,
-        technologies: project.technologies.filter((tech: string) => 
-          !tech.toLowerCase().includes('vue') && 
-          !tech.toLowerCase().includes('graphql') && 
-          !tech.toLowerCase().includes('redis') &&
-          !tech.toLowerCase().includes('postgresql')
-        )
-      }));
-      setProjects(filteredProjects);
-      localStorage.setItem('portfolioProjects', JSON.stringify(filteredProjects));
+      // Réinjecter les images depuis les imports selon l'ID du projet
+      const projectsWithImages = parsedProjects.map((project: Omit<Project, 'image'> & { id: string }) => {
+        let imageUrl = '';
+        if (project.id === '1') imageUrl = guineasmartImage;
+        else if (project.id === '2') imageUrl = koripayImage;
+        else if (project.id === '3') imageUrl = guintechImage;
+        
+        return {
+          ...project,
+          image: imageUrl,
+          technologies: project.technologies.filter((tech: string) => 
+            !tech.toLowerCase().includes('vue') && 
+            !tech.toLowerCase().includes('graphql') && 
+            !tech.toLowerCase().includes('redis') &&
+            !tech.toLowerCase().includes('postgresql')
+          )
+        };
+      });
+      setProjects(projectsWithImages);
     } else {
       setProjects(mockProjects);
-      localStorage.setItem('portfolioProjects', JSON.stringify(mockProjects));
+      // Stocker sans images
+      const projectsForStorage = mockProjects.map(({ image, ...project }) => project);
+      localStorage.setItem('portfolioProjects', JSON.stringify(projectsForStorage));
     }
 
     if (storedSkills) {
